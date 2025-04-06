@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   setup-tools:
     docker:
-      - image: cimg/base:stable  # Imagen básica con sudo, curl, etc.
+      - image: cimg/base:stable
 
     environment:
       ANDROID_HOME: /opt/android/sdk
@@ -11,12 +11,17 @@ jobs:
       PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/tools/bin:$PATH
 
     steps:
+      - run:
+          name: Instalar cliente SSH (fix de error)
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openssh-client
+
       - checkout
 
       - run:
           name: Instalar dependencias básicas (Java, curl, unzip)
           command: |
-            sudo apt-get update
             sudo apt-get install -y openjdk-11-jdk unzip wget curl git
 
       - run:
@@ -35,16 +40,15 @@ jobs:
             sudo npm install -g appium
 
       - run:
-          name: Instalar Android SDK
+          name: Instalar Android SDK y tools
           command: |
             mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
             wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmdline-tools.zip
             unzip cmdline-tools.zip
             mv cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
 
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses > /dev/null
             yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
-              "platform-tools" "platforms;android-30" "build-tools;30.0.3" "emulator" > /dev/null
+              "platform-tools" "platforms;android-30" "build-tools;30.0.3" "emulator"
 
   validate-tools:
     docker:
@@ -57,14 +61,20 @@ jobs:
 
     steps:
       - run:
-          name: Validar versiones de herramientas
+          name: Instalar cliente SSH (fix de error)
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openssh-client
+
+      - run:
+          name: Validar versiones instaladas
           command: |
             java -version
             node -v
             appium -v
             gradle -v
             adb version
-            emulator -version || true
+            emulator -version || true  # evitar fallos si no hay GUI
 
 workflows:
   version: 2
