@@ -29,45 +29,43 @@ jobs:
             emulator -version || true
 
 
-start-emulator:
-  docker:
-    - image: cimg/android:2023.09
-  resource_class: large
-  environment:
-    ANDROID_SDK_ROOT: /opt/android/sdk
-    ANDROID_HOME: /opt/android/sdk
-    PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin:$PATH
+  start-emulator:
+    docker:
+      - image: cimg/android:2023.09
+    resource_class: large
+    environment:
+      ANDROID_SDK_ROOT: /opt/android/sdk
+      ANDROID_HOME: /opt/android/sdk
+      PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin:$PATH
 
-  steps:
-    - run:
-        name: Descargar y configurar cmdline-tools manualmente
-        command: |
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-          unzip cmdline-tools.zip
-          mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+    steps:
+      - run:
+          name: Descargar y configurar cmdline-tools manualmente
+          command: |
+            mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+            curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
+            unzip cmdline-tools.zip
+            mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
-    - run:
-        name: Instalar imagen del sistema Android 30
-        command: |
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
-            --sdk_root=$ANDROID_SDK_ROOT \
-            "system-images;android-30;google_apis;x86"
+      - run:
+          name: Instalar imagen del sistema Android 30
+          command: |
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+              --sdk_root=$ANDROID_SDK_ROOT \
+              "system-images;android-30;google_apis;x86"
 
-    - run:
-        name: Crear y arrancar emulador Android headless
-        command: |
-          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager \
-            create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-
-          emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
-          echo "Esperando que el emulador arranque..."
-          adb wait-for-device
-          adb shell input keyevent 82
-          sleep 10
-          adb devices
-
-
+      - run:
+          name: Crear y arrancar emulador Android headless
+          command: |
+            echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager \
+              create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
+  
+            emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
+            echo "Esperando que el emulador arranque..."
+            adb wait-for-device
+            adb shell input keyevent 82
+            sleep 10
+            adb devices
 
 workflows:
   version: 2
