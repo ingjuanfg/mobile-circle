@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: cimg/android:2023.09
     environment:
-      # Usamos una ubicación en $HOME para evitar problemas de permisos
+      # Usamos $HOME para evitar problemas de permisos
       ANDROID_SDK_ROOT: "$HOME/android-sdk"
       ANDROID_HOME: "$HOME/android-sdk"
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/emulator:$HOME/android-sdk/tools:$HOME/android-sdk/cmdline-tools/latest/bin
@@ -34,10 +34,11 @@ jobs:
       - run:
           name: Descargar y configurar cmdline-tools
           command: |
-            mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+            mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
             curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
             unzip -q cmdline-tools.zip
-            mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+            # Mover el contenido extraído (dentro de la carpeta "cmdline-tools") al directorio "latest"
+            mv cmdline-tools/* $ANDROID_SDK_ROOT/cmdline-tools/latest
 
       - run:
           name: Instalar platform-tools
