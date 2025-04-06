@@ -25,10 +25,10 @@ jobs:
             sudo npm install -g appium
 
       - run:
-          name: Instalar dependencias de Android SDK
+          name: Instalar dependencias del SDK de Android
           command: |
-            sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3" "system-images;android-30;google_apis;x86"
-            yes | sdkmanager --licenses
+            yes | sdkmanager --licenses > /dev/null
+            yes | sdkmanager --install "platform-tools" "platforms;android-30" "build-tools;30.0.3" "system-images;android-30;google_apis;x86"
 
       - run:
           name: Crear y lanzar emulador Android
