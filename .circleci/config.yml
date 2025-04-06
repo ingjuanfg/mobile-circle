@@ -5,9 +5,10 @@ jobs:
     docker:
       - image: cimg/android:2023.09
     environment:
-      ANDROID_SDK_ROOT: /opt/android/sdk
-      ANDROID_HOME: /opt/android/sdk
-      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin
+      # Usamos una ubicación en $HOME para evitar problemas de permisos
+      ANDROID_SDK_ROOT: "$HOME/android-sdk"
+      ANDROID_HOME: "$HOME/android-sdk"
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/emulator:$HOME/android-sdk/tools:$HOME/android-sdk/cmdline-tools/latest/bin
     steps:
 
       - run:
