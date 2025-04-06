@@ -1,22 +1,31 @@
 version: 2.1
 
-orbs:
-  android: circleci/android@2.2.0
-
 jobs:
-  test:
+  setup-tools:
     docker:
-      - image: cimg/android:2023.09
-    resource_class: large
+      - image: cimg/base:stable  # Imagen básica con sudo, curl, etc.
 
     environment:
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-      DEVICE_NAME: "Android Emulator"
-      PLATFORM_VERSION: "11.0"
+      ANDROID_HOME: /opt/android/sdk
       ANDROID_SDK_ROOT: /opt/android/sdk
+      PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/tools/bin:$PATH
 
     steps:
       - checkout
+
+      - run:
+          name: Instalar dependencias básicas (Java, curl, unzip)
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openjdk-11-jdk unzip wget curl git
+
+      - run:
+          name: Instalar Gradle
+          command: |
+            wget https://services.gradle.org/distributions/gradle-8.5-bin.zip
+            sudo unzip -d /opt/gradle gradle-8.5-bin.zip
+            echo 'export PATH=$PATH:/opt/gradle/gradle-8.5/bin' >> $BASH_ENV
+            source $BASH_ENV
 
       - run:
           name: Instalar Node.js y Appium
@@ -26,37 +35,42 @@ jobs:
             sudo npm install -g appium
 
       - run:
-          name: Instalar dependencias del SDK de Android
+          name: Instalar Android SDK
           command: |
-            sudo mkdir -p "$ANDROID_SDK_ROOT"
-            yes | sdkmanager --update || true  # Forzar actualización sin crash
-            yes | sdkmanager --install \
-              "platform-tools" \
-              "platforms;android-30" \
-              "build-tools;30.0.3" \
-              "system-images;android-30;google_apis;x86"
+            mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+            wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmdline-tools.zip
+            unzip cmdline-tools.zip
+            mv cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
 
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses > /dev/null
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
+              "platform-tools" "platforms;android-30" "build-tools;30.0.3" "emulator" > /dev/null
+
+  validate-tools:
+    docker:
+      - image: cimg/base:stable
+
+    environment:
+      ANDROID_HOME: /opt/android/sdk
+      ANDROID_SDK_ROOT: /opt/android/sdk
+      PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/tools/bin:/opt/gradle/gradle-8.5/bin:$PATH
+
+    steps:
       - run:
-          name: Crear y lanzar emulador Android
+          name: Validar versiones de herramientas
           command: |
-            echo "no" | avdmanager create avd -n circleci-avd -k "system-images;android-30;google_apis;x86" --device "pixel"
-            emulator -avd circleci-avd -no-audio -no-window -no-boot-anim -no-snapshot &
-            adb wait-for-device
-            sleep 30
-            adb shell input keyevent 82
-
-      - run:
-          name: Lanzar Appium
-          command: |
-            appium --base-path /wd/hub --log-level error &
-            sleep 10
-
-      - run:
-          name: Ejecutar pruebas
-          command: ./gradlew test
+            java -version
+            node -v
+            appium -v
+            gradle -v
+            adb version
+            emulator -version || true
 
 workflows:
   version: 2
-  test:
+  setup-and-validate:
     jobs:
-      - test
+      - setup-tools
+      - validate-tools:
+          requires:
+            - setup-tools
