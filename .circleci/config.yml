@@ -3,34 +3,16 @@ version: 2.1
 jobs:
   setup-tools:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/android:2023.09  # ✅ Android SDK + Java + sudo + git
+    resource_class: large
 
     environment:
       ANDROID_HOME: /opt/android/sdk
       ANDROID_SDK_ROOT: /opt/android/sdk
-      PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/tools/bin:$PATH
+      PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/cmdline-tools/latest/bin:/opt/android/sdk/tools:/opt/android/sdk/tools/bin:$PATH
 
     steps:
-      - run:
-          name: Instalar cliente SSH (fix de error)
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y openssh-client
-
       - checkout
-
-      - run:
-          name: Instalar dependencias básicas (Java, curl, unzip)
-          command: |
-            sudo apt-get install -y openjdk-11-jdk unzip wget curl git
-
-      - run:
-          name: Instalar Gradle
-          command: |
-            wget https://services.gradle.org/distributions/gradle-8.5-bin.zip
-            sudo unzip -d /opt/gradle gradle-8.5-bin.zip
-            echo 'export PATH=$PATH:/opt/gradle/gradle-8.5/bin' >> $BASH_ENV
-            source $BASH_ENV
 
       - run:
           name: Instalar Node.js y Appium
@@ -40,47 +22,18 @@ jobs:
             sudo npm install -g appium
 
       - run:
-          name: Instalar Android SDK y tools
-          command: |
-            mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-            wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmdline-tools.zip
-            unzip cmdline-tools.zip
-            mv cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
-              "platform-tools" "platforms;android-30" "build-tools;30.0.3" "emulator"
-
-  validate-tools:
-    docker:
-      - image: cimg/base:stable
-
-    environment:
-      ANDROID_HOME: /opt/android/sdk
-      ANDROID_SDK_ROOT: /opt/android/sdk
-      PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/tools/bin:/opt/gradle/gradle-8.5/bin:$PATH
-
-    steps:
-      - run:
-          name: Instalar cliente SSH (fix de error)
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y openssh-client
-
-      - run:
-          name: Validar versiones instaladas
+          name: Validar herramientas instaladas
           command: |
             java -version
             node -v
             appium -v
             gradle -v
+            sdkmanager --list || true
             adb version
-            emulator -version || true  # evitar fallos si no hay GUI
+            emulator -version || true
 
 workflows:
   version: 2
   setup-and-validate:
     jobs:
       - setup-tools
-      - validate-tools:
-          requires:
-            - setup-tools
