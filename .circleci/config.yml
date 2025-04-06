@@ -14,15 +14,15 @@ jobs:
       - run:
           name: Instalar OpenJDK 17 (si es necesario)
           command: |
-            apt-get update
-            apt-get install -y openjdk-17-jdk
+            sudo apt-get update
+            sudo apt-get install -y openjdk-17-jdk
             java -version
 
       - run:
           name: Instalar Node.js y Appium
           command: |
             curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-            apt-get install -y nodejs
+            sudo apt-get install -y nodejs
             npm install -g appium
 
       - run:
