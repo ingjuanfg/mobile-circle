@@ -31,6 +31,19 @@ jobs:
             sudo apt-get install -y gradle
 
       - run:
+          name: Descargar y configurar cmdline-tools
+          command: |
+            mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+            curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
+            unzip -q cmdline-tools.zip
+            mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+
+      - run:
+          name: Instalar platform-tools
+          command: |
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+      - run:
           name: Validar herramientas instaladas
           command: |
             java -version
@@ -42,25 +55,14 @@ jobs:
             emulator -version || true
 
       - run:
-          name: Descargar y configurar cmdline-tools manualmente
-          command: |
-            mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-            curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-            unzip -q cmdline-tools.zip
-            mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
-
-      - run:
           name: Instalar imagen del sistema Android 30
           command: |
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
-              --sdk_root=$ANDROID_SDK_ROOT \
-              "system-images;android-30;google_apis;x86"
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-30;google_apis;x86"
 
       - run:
           name: Crear y arrancar emulador Android headless
           command: |
-            echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager \
-              create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
+            echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
             
             # Arrancar el emulador en segundo plano
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
