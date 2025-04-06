@@ -22,12 +22,7 @@ jobs:
           command: |
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
-            # Instalar npm en caso de que no se instale junto con nodejs
-            if ! command -v npm &> /dev/null; then
-              sudo apt-get install -y npm
-            fi
-            npm -v
-            npm install -g appium
+            sudo npm install -g appium
 
       - run:
           name: Validar herramientas instaladas
