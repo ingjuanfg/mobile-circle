@@ -1,63 +1,37 @@
-version: 2.1
+start-emulator:
+  docker:
+    - image: cimg/android:2023.09
+  resource_class: large
+  environment:
+    ANDROID_SDK_ROOT: /opt/android/sdk
+    ANDROID_HOME: /opt/android/sdk
+    PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin:$PATH
 
-jobs:
-  setup-tools:
-    docker:
-      - image: cimg/android:2023.09
-    environment:
-      ANDROID_SDK_ROOT: /opt/android/sdk
-    steps:
-      - run:
-          name: Clonar repo manualmente con HTTPS
-          command: git clone https://github.com/ingjuanfg/mobile-circle.git .
+  steps:
+    - run:
+        name: Descargar y configurar cmdline-tools manualmente
+        command: |
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
+          unzip cmdline-tools.zip
+          mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
-      - run:
-          name: Instalar Node.js y Appium
-          command: |
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            sudo npm install -g appium
+    - run:
+        name: Instalar imagen del sistema Android 30
+        command: |
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            --sdk_root=$ANDROID_SDK_ROOT \
+            "system-images;android-30;google_apis;x86"
 
-      - run:
-          name: Validar herramientas instaladas
-          command: |
-            java -version
-            node -v
-            appium -v
-            gradle -v
-            adb version
-            emulator -version || true
+    - run:
+        name: Crear y arrancar emulador Android headless
+        command: |
+          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager \
+            create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
 
-
-  start-emulator:
-    docker:
-      - image: cimg/android:2023.09
-    resource_class: large
-    environment:
-      ANDROID_SDK_ROOT: /opt/android/sdk
-    steps:
-      - run:
-          name: Instalar imagen del sistema Android 30
-          command: |
-            yes | sdkmanager --install "system-images;android-30;google_apis;x86"
-
-      - run:
-          name: Crear y arrancar emulador Android headless
-          command: |
-            echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-            emulator -avd test-emulator -no-window -no-audio -no-snapshot &
-            echo "Esperando que el emulador arranque..."
-            adb wait-for-device
-            adb shell input keyevent 82
-            sleep 10
-            adb devices
-
-
-workflows:
-  version: 2
-  setup-and-validate:
-    jobs:
-      - setup-tools
-      - start-emulator:
-          requires:
-            - setup-tools
+          emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
+          echo "Esperando que el emulador arranque..."
+          adb wait-for-device
+          adb shell input keyevent 82
+          sleep 10
+          adb devices
