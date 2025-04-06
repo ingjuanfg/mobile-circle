@@ -11,23 +11,19 @@ jobs:
       PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin:$PATH
     steps:
 
-      #- run:
-       #   name: Clonar repo manualmente con HTTPS
-        #  command: git clone https://github.com/ingjuanfg/mobile-circle.git .
-
       - run:
           name: Instalar OpenJDK 17 (si es necesario)
           command: |
-            sudo apt-get update
-            sudo apt-get install -y openjdk-17-jdk
+            apt-get update
+            apt-get install -y openjdk-17-jdk
             java -version
 
       - run:
           name: Instalar Node.js y Appium
           command: |
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            sudo npm install -g appium
+            curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+            apt-get install -y nodejs
+            npm install -g appium
 
       - run:
           name: Validar herramientas instaladas
