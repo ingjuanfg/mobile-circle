@@ -22,10 +22,11 @@ public class SampleTest {
     public void configuracionAppium() throws MalformedURLException {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
-                .setDeviceName("emulator-5554")
+                .setDeviceName("Android Emulator")
                 .setPlatformVersion("16.0")
                 .setAppPackage("com.google.android.youtube")
                 .setAppActivity("com.google.android.youtube.HomeActivity")
+                .setIsHeadless(true)
                 .setAutoGrantPermissions(true);
 
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/"), options);
