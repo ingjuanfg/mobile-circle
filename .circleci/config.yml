@@ -4,15 +4,20 @@ jobs:
   setup-tools:
     docker:
       - image: cimg/android:2023.09
-    #resource_class: large
+    # resource_class: large
     environment:
       ANDROID_SDK_ROOT: /opt/android/sdk
       ANDROID_HOME: /opt/android/sdk
       PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin:$PATH
     steps:
+      - checkout  # Usa el paso nativo de checkout en lugar de clonar manualmente
+
       - run:
-          name: Clonar repo manualmente con HTTPS
-          command: git clone https://github.com/ingjuanfg/mobile-circle.git .
+          name: Instalar OpenJDK 17 (si es necesario)
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openjdk-17-jdk
+            java -version
 
       - run:
           name: Instalar Node.js y Appium
@@ -36,7 +41,7 @@ jobs:
           command: |
             mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
             curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-            unzip cmdline-tools.zip
+            unzip -q cmdline-tools.zip
             mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
       - run:
@@ -52,6 +57,7 @@ jobs:
             echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager \
               create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
             
+            # Arrancar el emulador en segundo plano
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
             echo "Esperando que el emulador arranque..."
             adb wait-for-device
