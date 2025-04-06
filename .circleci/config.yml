@@ -7,12 +7,13 @@ jobs:
   test:
     docker:
       - image: cimg/android:2023.09
-    resource_class: large  # Más RAM para correr el emulador
+    resource_class: large
 
     environment:
       GRADLE_OPTS: "-Dorg.gradle.daemon=false"
       DEVICE_NAME: "Android Emulator"
       PLATFORM_VERSION: "11.0"
+      ANDROID_SDK_ROOT: /opt/android/sdk
 
     steps:
       - checkout
@@ -27,23 +28,28 @@ jobs:
       - run:
           name: Instalar dependencias del SDK de Android
           command: |
-            yes | sdkmanager --licenses > /dev/null
-            yes | sdkmanager --install "platform-tools" "platforms;android-30" "build-tools;30.0.3" "system-images;android-30;google_apis;x86"
+            sudo mkdir -p "$ANDROID_SDK_ROOT"
+            yes | sdkmanager --update || true  # Forzar actualización sin crash
+            yes | sdkmanager --install \
+              "platform-tools" \
+              "platforms;android-30" \
+              "build-tools;30.0.3" \
+              "system-images;android-30;google_apis;x86"
 
       - run:
           name: Crear y lanzar emulador Android
           command: |
             echo "no" | avdmanager create avd -n circleci-avd -k "system-images;android-30;google_apis;x86" --device "pixel"
-            emulator -avd circleci-avd -no-audio -no-window -no-snapshot &
-            sleep 30  # Espera inicial mientras arranca
+            emulator -avd circleci-avd -no-audio -no-window -no-boot-anim -no-snapshot &
             adb wait-for-device
+            sleep 30
             adb shell input keyevent 82
 
       - run:
           name: Lanzar Appium
           command: |
             appium --base-path /wd/hub --log-level error &
-            sleep 10  # Esperar que Appium esté listo
+            sleep 10
 
       - run:
           name: Ejecutar pruebas
