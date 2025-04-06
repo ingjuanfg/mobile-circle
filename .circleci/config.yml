@@ -4,15 +4,12 @@ jobs:
   setup-tools:
     docker:
       - image: cimg/android:2023.09
-
     environment:
       ANDROID_SDK_ROOT: /opt/android/sdk
-
     steps:
       - run:
           name: Clonar repo manualmente con HTTPS
-          command: |
-            git clone https://github.com/ingjuanfg/mobile-circle.git .
+          command: git clone https://github.com/ingjuanfg/mobile-circle.git .
 
       - run:
           name: Instalar Node.js y Appium
@@ -31,8 +28,31 @@ jobs:
             adb version
             emulator -version || true
 
+
+  start-emulator:
+    docker:
+      - image: cimg/android:2023.09
+    resource_class: large
+    environment:
+      ANDROID_SDK_ROOT: /opt/android/sdk
+    steps:
+      - run:
+          name: Crear y arrancar emulador Android headless
+          command: |
+            echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
+            emulator -avd test-emulator -no-window -no-audio -no-snapshot &
+            echo "Esperando que el emulador arranque..."
+            adb wait-for-device
+            adb shell input keyevent 82  # desbloquear
+            sleep 10
+            adb devices
+
+
 workflows:
   version: 2
   setup-and-validate:
     jobs:
       - setup-tools
+      - start-emulator:
+          requires:
+            - setup-tools
