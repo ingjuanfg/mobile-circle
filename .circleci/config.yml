@@ -10,7 +10,10 @@ jobs:
       ANDROID_HOME: /opt/android/sdk
       PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin:$PATH
     steps:
-      - checkout  # Usa el paso nativo de checkout en lugar de clonar manualmente
+
+      - run:
+          name: Clonar repo manualmente con HTTPS
+          command: git clone https://github.com/ingjuanfg/mobile-circle.git .
 
       - run:
           name: Instalar OpenJDK 17 (si es necesario)
