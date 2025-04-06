@@ -1,17 +1,18 @@
 version: 2.1
 
 jobs:
-  run-app:
+  setup-tools:
     docker:
       - image: cimg/android:2023.09
-    resource_class: large
-
+    #resource_class: large
     environment:
       ANDROID_SDK_ROOT: /opt/android/sdk
       ANDROID_HOME: /opt/android/sdk
       PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/tools:/opt/android/sdk/cmdline-tools/latest/bin:$PATH
-
     steps:
+      - run:
+          name: Clonar repo manualmente con HTTPS
+          command: git clone https://github.com/ingjuanfg/mobile-circle.git .
 
       - run:
           name: Instalar Node.js y Appium
@@ -50,7 +51,7 @@ jobs:
           command: |
             echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager \
               create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-
+            
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
             echo "Esperando que el emulador arranque..."
             adb wait-for-device
@@ -60,6 +61,6 @@ jobs:
 
 workflows:
   version: 2
-  test:
+  setup-and-validate:
     jobs:
-      - run-app
+      - setup-tools
