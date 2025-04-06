@@ -37,13 +37,18 @@ jobs:
       ANDROID_SDK_ROOT: /opt/android/sdk
     steps:
       - run:
+          name: Instalar imagen del sistema Android 30
+          command: |
+            yes | sdkmanager --install "system-images;android-30;google_apis;x86"
+
+      - run:
           name: Crear y arrancar emulador Android headless
           command: |
             echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
             emulator -avd test-emulator -no-window -no-audio -no-snapshot &
             echo "Esperando que el emulador arranque..."
             adb wait-for-device
-            adb shell input keyevent 82  # desbloquear
+            adb shell input keyevent 82
             sleep 10
             adb devices
 
