@@ -6,28 +6,36 @@ orbs:
 jobs:
   test:
     docker:
-      - image: cimg/android:2023.09  # Imagen con Java, Android SDK, etc.
-    resource_class: large  # Para tener más memoria al correr el emulador
+      - image: cimg/android:2023.09
+    resource_class: large  # Más RAM para correr el emulador
+
     environment:
       GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+      DEVICE_NAME: "Android Emulator"
+      PLATFORM_VERSION: "11.0"
 
     steps:
       - checkout
 
       - run:
-          name: Instalar Node y Appium
+          name: Instalar Node.js y Appium
           command: |
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
             sudo npm install -g appium
 
       - run:
+          name: Instalar dependencias de Android SDK
+          command: |
+            sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3" "system-images;android-30;google_apis;x86"
+            yes | sdkmanager --licenses
+
+      - run:
           name: Crear y lanzar emulador Android
           command: |
-            echo "no" | avdmanager create avd -n circleci-avd -k "system-images;android-30;google_apis;x86"
+            echo "no" | avdmanager create avd -n circleci-avd -k "system-images;android-30;google_apis;x86" --device "pixel"
             emulator -avd circleci-avd -no-audio -no-window -no-snapshot &
-
-            # Esperar a que arranque el emulador completamente
+            sleep 30  # Espera inicial mientras arranca
             adb wait-for-device
             adb shell input keyevent 82
 
