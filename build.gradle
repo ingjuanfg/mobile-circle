@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        mavenLocal()
+    }
+    dependencies {
+        classpath("net.serenity-bdd:serenity-single-page-report:4.2.16")
+    }
+}
+
+plugins {
+    id 'java'
+    id 'idea'
+    id "net.serenity-bdd.serenity-gradle-plugin" version "4.2.16"
+}
+
+group = 'co.qaconf'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext{
+    serenityCoreVersion = '4.2.16'
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'io.appium:java-client:8.3.0'
+    testImplementation "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
+    testImplementation "net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}"
+    testImplementation "net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}"
+    testImplementation "net.serenity-bdd:serenity-junit5:${serenityCoreVersion}"
+    testImplementation "net.serenity-bdd:serenity-ensure:${serenityCoreVersion}"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+serenity {
+    reports = ["single-page-html"]
+}
+
+test.finalizedBy(aggregate)
