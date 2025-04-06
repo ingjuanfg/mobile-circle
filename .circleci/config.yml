@@ -3,16 +3,16 @@ version: 2.1
 jobs:
   setup-tools:
     docker:
-      - image: cimg/android:2023.09  # ✅ Android SDK + Java + sudo + git
-    resource_class: large
+      - image: cimg/android:2023.09
 
     environment:
-      ANDROID_HOME: /opt/android/sdk
       ANDROID_SDK_ROOT: /opt/android/sdk
-      PATH: /opt/android/sdk/platform-tools:/opt/android/sdk/emulator:/opt/android/sdk/cmdline-tools/latest/bin:/opt/android/sdk/tools:/opt/android/sdk/tools/bin:$PATH
 
     steps:
-      - checkout
+      - run:
+          name: Clonar repo manualmente con HTTPS
+          command: |
+            git clone https://github.com/ingjuanfg/mobile-circle.git .
 
       - run:
           name: Instalar Node.js y Appium
@@ -28,7 +28,6 @@ jobs:
             node -v
             appium -v
             gradle -v
-            sdkmanager --list || true
             adb version
             emulator -version || true
 
