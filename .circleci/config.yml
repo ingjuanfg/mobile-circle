@@ -12,7 +12,7 @@ jobs:
       - run:
           name: Clonar repositorio vía HTTPS
           command: |
-            git clone https://github.com/ingjuanfg/mobile-circle.git .
+            git clone --branch circleci-project-setup https://github.com/ingjuanfg/mobile-circle.git .
 
       - run:
           name: Instalar Node.js y Appium
