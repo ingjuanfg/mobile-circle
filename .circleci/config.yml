@@ -63,6 +63,9 @@ jobs:
           command: |
             echo "Instalando el driver de UIAutomator2..."
             appium driver install uiautomator2
+            echo "Instalando el Appium doctor"
+            sudo npm install appium-doctor -g
+            appium-doctor --android
             echo "Arrancando Appium server en segundo plano..."
             nohup appium --address 127.0.0.1 --allow-cors > appium.log 2>&1 &
             sleep 10
