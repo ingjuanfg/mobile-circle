@@ -62,7 +62,7 @@ jobs:
           name: Iniciar Appium server
           command: |
             echo "Arrancando Appium server en segundo plano..."
-            nohup appium > appium.log 2>&1 &
+            nohup appium --address 127.0.0.1 > appium.log 2>&1 &
             sleep 10
             echo "Appium server iniciado. Log (últimas líneas):"
             tail -n 20 appium.log
