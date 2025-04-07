@@ -10,7 +10,7 @@ jobs:
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
     steps:
       - run:
-          name: Clonar repositorio vía HTTPS
+          name: Clonar repositorio vía HTTPS y cambiar a rama
           command: |
             git clone --branch circleci-project-setup https://github.com/ingjuanfg/mobile-circle.git .
 
@@ -53,26 +53,26 @@ jobs:
             adb devices
 
       - run:
+          name: Instalar driver de UIAutomator2 en Appium
+          command: |
+            echo "Instalando el driver de UIAutomator2..."
+            appium driver install uiautomator2
+
+      - run:
           name: Iniciar Appium server
           command: |
             echo "Arrancando Appium server en segundo plano..."
             nohup appium > appium.log 2>&1 &
-            # Esperar para que Appium se inicie completamente
             sleep 10
-            echo "Appium server iniciado. Log:"
+            echo "Appium server iniciado. Log (últimas líneas):"
             tail -n 20 appium.log
-
-      - run:
-          name: Verificar IP del contenedor
-          command: |
-            ifconfig || (sudo apt-get update && sudo apt-get install -y net-tools && ifconfig)
 
       - run:
           name: Ejecutar pruebas con Gradle
           command: |
             echo "Ejecutando tests con Gradle..."
-            ./gradlew test --info --stacktrace
-            # Si no usas wrapper, reemplaza por: gradle test
+            ./gradlew test
+            # O, si no usas wrapper: gradle test
 
 workflows:
   version: 2
