@@ -52,15 +52,17 @@ jobs:
             sleep 10
             adb devices
 
-      - run:
-          name: Instalar driver de UIAutomator2 en Appium
-          command: |
-            echo "Instalando el driver de UIAutomator2..."
-            appium driver install uiautomator2
+#      - run:
+#          name: Instalar driver de UIAutomator2 en Appium
+#          command: |
+#            echo "Instalando el driver de UIAutomator2..."
+#            appium driver install uiautomator2
 
       - run:
           name: Iniciar Appium server
           command: |
+            echo "Instalando el driver de UIAutomator2..."
+            appium driver install uiautomator2
             echo "Arrancando Appium server en segundo plano..."
             nohup appium --address 127.0.0.1 > appium.log 2>&1 &
             sleep 10
