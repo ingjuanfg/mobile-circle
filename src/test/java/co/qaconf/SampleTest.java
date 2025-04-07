@@ -28,9 +28,13 @@ public class SampleTest {
                 .setAppActivity("com.google.android.youtube.HomeActivity")
                 .setIsHeadless(true)
                 .setAutoGrantPermissions(true);
+        // Evita que se intente borrar las políticas de hidden API y se realice la inicialización del dispositivo
         options.setCapability("skipHiddenApiCheck", true);
+        options.setCapability("skipDeviceInitialization", true);
+
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/"), options);
     }
+
 
 
     @Test

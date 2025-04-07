@@ -66,6 +66,12 @@ jobs:
             echo "Appium server iniciado. Log (últimas líneas):"
             tail -n 20 appium.log
 
+            echo "VALIDAR EMULADOR DE NUEVO"
+            adb devices
+            
+            echo "VALIDAR APPIUM"
+            curl http://127.0.0.1:4723/wd/hub/status
+
             # Ejecutar pruebas con Gradle
             echo "Ejecutando tests con Gradle..."
             ./gradlew test --info --stacktrace
