@@ -5,16 +5,13 @@ jobs:
     docker:
       - image: cimg/android:2023.09
     environment:
-      # Usamos $HOME para evitar problemas de permisos
       ANDROID_SDK_ROOT: "$HOME/android-sdk"
       ANDROID_HOME: "$HOME/android-sdk"
       JAVA_HOME: "/usr/lib/jvm/java-17-openjdk-amd64"
-      # Actualizamos PATH para incluir la ruta a "tools/bin"
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/emulator:$HOME/android-sdk/tools:$HOME/android-sdk/cmdline-tools/tools/bin
     steps:
-
       - run:
-          name: Instalar OpenJDK 17 (si es necesario)
+          name: Instalar OpenJDK 17
           command: |
             sudo apt-get update
             sudo apt-get install -y openjdk-17-jdk
@@ -38,19 +35,17 @@ jobs:
           command: |
             mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
             curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-            # Extraer el ZIP en el directorio cmdline-tools
             unzip -q cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
             # La carpeta extraída normalmente se llama "cmdline-tools"; la renombramos a "tools"
             mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools
-            # Debug: Imprimir la estructura de cmdline-tools para verificar que contenga "bin", "lib", etc.
             echo "Estructura de \$ANDROID_SDK_ROOT/cmdline-tools:"
             ls -R $ANDROID_SDK_ROOT/cmdline-tools
 
       - run:
           name: Instalar platform-tools
           command: |
+            unset CLASSPATH
             yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-            # Debug: Imprimir la estructura de platform-tools para confirmar la instalación
             echo "Estructura de \$ANDROID_SDK_ROOT/platform-tools:"
             ls -R $ANDROID_SDK_ROOT/platform-tools
 
@@ -68,13 +63,13 @@ jobs:
       - run:
           name: Instalar imagen del sistema Android 30
           command: |
+            unset CLASSPATH
             yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-30;google_apis;x86"
 
       - run:
           name: Crear y arrancar emulador Android headless
           command: |
             echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-            # Arrancar el emulador en segundo plano
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
             echo "Esperando que el emulador arranque..."
             adb wait-for-device
