@@ -5,24 +5,9 @@ jobs:
     docker:
       - image: cimg/android:2023.09
     environment:
+      # Usamos el SDK preinstalado en la imagen, que se encuentra en /home/circleci/android-sdk
       ANDROID_SDK_ROOT: /home/circleci/android-sdk
-      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
     steps:
-      - run:
-          name: Verificar entorno y rutas
-          command: |
-            echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
-            echo "JAVA_HOME: $JAVA_HOME"
-            echo "CLASSPATH: $CLASSPATH"
-            echo "Estructura de $ANDROID_SDK_ROOT/cmdline-tools:"
-            ls -R $ANDROID_SDK_ROOT/cmdline-tools || echo "No se encontró cmdline-tools"
-            echo "Verificando existencia de sdkmanager:"
-            if [ -f $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager ]; then
-              echo "sdkmanager existe en $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-            else
-              echo "sdkmanager NO existe en la ruta esperada"
-            fi
-
       - run:
           name: Clonar repo manualmente con HTTPS
           command: |
@@ -46,16 +31,10 @@ jobs:
             emulator -version || true
 
       - run:
-          name: Actualizar SDK Tools (Ignorando error 141)
-          command: |
-            echo "Actualizando SDK Tools..."
-            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --update || true
-
-      - run:
           name: Instalar imagen del sistema Android 30
           command: |
             export JAVA_OPTS="-Djavax.xml.accessExternalSchema=all"
-            echo "Instalando imagen de sistema: system-images;android-30;google_apis;x86 usando --no_https"
+            echo "Instalando imagen de sistema: system-images;android-30;google_apis;x86"
             yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis;x86" || true
 
       - run:
@@ -63,9 +42,11 @@ jobs:
           command: |
             echo "Creando AVD 'test-emulator'..."
             echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-            echo "Arrancando el emulador en segundo plano..."
-            emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
-            echo "Esperando que el emulador arranque..."
+            echo "Arrancando el emulador en segundo plano en modo software..."
+            emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -accel off &
+            echo "Esperando a que el emulador arranque..."
+            # Esperar más tiempo ya que el modo software puede ser más lento (ajusta el sleep si es necesario)
+            sleep 20
             adb wait-for-device
             adb shell input keyevent 82
             sleep 10
