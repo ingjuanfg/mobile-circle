@@ -4,18 +4,17 @@ jobs:
   setup-tools:
     docker:
       - image: cimg/android:2023.09
+    # La imagen cimg/android:2023.09 ya viene con el Android SDK preinstalado.
+    # No es necesario reinstalar cmdline-tools ni platform-tools.
     environment:
-      ANDROID_SDK_ROOT: "$HOME/android-sdk"
-      ANDROID_HOME: "$HOME/android-sdk"
-      JAVA_HOME: "/usr/lib/jvm/java-17-openjdk-amd64"
-      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/emulator:$HOME/android-sdk/tools:$HOME/android-sdk/cmdline-tools/tools/bin
+      # En este ejemplo se utiliza el valor por defecto o el que ya está configurado en la imagen.
+      # Algunos repositorios usan /home/circleci/android-sdk, que es donde se encuentra el SDK preinstalado.
+      ANDROID_SDK_ROOT: /home/circleci/android-sdk
     steps:
       - run:
-          name: Instalar OpenJDK 17
+          name: Clonar repo manualmente con HTTPS
           command: |
-            sudo apt-get update
-            sudo apt-get install -y openjdk-17-jdk
-            java -version
+            git clone https://github.com/ingjuanfg/mobile-circle.git .
 
       - run:
           name: Instalar Node.js y Appium
@@ -25,57 +24,14 @@ jobs:
             sudo npm install -g appium
 
       - run:
-          name: Instalar Gradle
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y gradle
-
-      - run:
-          name: Descargar y configurar cmdline-tools
-          command: |
-            mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-            curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-            unzip -q cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
-            # La carpeta extraída normalmente se llama "cmdline-tools"; la renombramos a "tools"
-            mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools
-            echo "Estructura de \$ANDROID_SDK_ROOT/cmdline-tools:"
-            ls -R $ANDROID_SDK_ROOT/cmdline-tools
-
-      - run:
-          name: Instalar platform-tools
-          command: |
-            unset CLASSPATH
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-            echo "Estructura de \$ANDROID_SDK_ROOT/platform-tools:"
-            ls -R $ANDROID_SDK_ROOT/platform-tools
-
-      - run:
           name: Validar herramientas instaladas
           command: |
             java -version
             node -v
-            npm -v
             appium -v
             gradle -v
             adb version
             emulator -version || true
-
-      - run:
-          name: Instalar imagen del sistema Android 30
-          command: |
-            unset CLASSPATH
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-30;google_apis;x86"
-
-      - run:
-          name: Crear y arrancar emulador Android headless
-          command: |
-            echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-            emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
-            echo "Esperando que el emulador arranque..."
-            adb wait-for-device
-            adb shell input keyevent 82
-            sleep 10
-            adb devices
 
 workflows:
   version: 2
