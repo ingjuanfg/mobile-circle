@@ -41,34 +41,33 @@ jobs:
       - run:
           name: Arrancar emulador, iniciar Appium y ejecutar tests
           command: |
-            # Crear AVD usando el system image x86_64
             echo "Creando AVD 'test-emulator'..."
             echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86_64" --device "pixel"
             
-            # Arrancar el emulador en modo software
             echo "Arrancando emulador en modo software..."
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -accel off &
             EMULATOR_PID=$!
+            
             echo "Esperando a que el emulador arranque..."
-            sleep 40
+            sleep 240
             adb wait-for-device
+            echo "Verificando que el servicio settings esté disponible:"
+            adb shell settings list global
             adb devices
             
-            # Instalar el driver de UIAutomator2 y validar dependencias con Appium Doctor
             echo "Instalando el driver de UIAutomator2..."
             appium driver install uiautomator2
+            
             echo "Instalando Appium Doctor..."
             sudo npm install -g appium-doctor
             appium-doctor --android
             
-            # Arrancar Appium server (forzando a escuchar en 127.0.0.1 y permitiendo CORS)
             echo "Arrancando Appium server en segundo plano..."
             nohup appium --address 127.0.0.1 --allow-cors > appium.log 2>&1 &
-            sleep 10
+            sleep 30
             echo "Appium server iniciado. Log (últimas líneas):"
             tail -n 20 appium.log
             
-            # Ejecutar las pruebas con Gradle
             echo "Ejecutando tests con Gradle..."
             ./gradlew test --info --stacktrace
             
