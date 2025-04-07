@@ -22,8 +22,6 @@ jobs:
             else
               echo "sdkmanager NO existe en la ruta esperada"
             fi
-            echo "Estructura de $ANDROID_SDK_ROOT/platform-tools:"
-            ls -R $ANDROID_SDK_ROOT/platform-tools || echo "No se encontró platform-tools"
 
       - run:
           name: Clonar repo manualmente con HTTPS
@@ -48,17 +46,17 @@ jobs:
             emulator -version || true
 
       - run:
-          name: Actualizar SDK Tools
+          name: Actualizar SDK Tools (Ignorando error 141)
           command: |
             echo "Actualizando SDK Tools..."
-            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --update
+            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --update || true
 
       - run:
           name: Instalar imagen del sistema Android 30
           command: |
             export JAVA_OPTS="-Djavax.xml.accessExternalSchema=all"
             echo "Instalando imagen de sistema: system-images;android-30;google_apis;x86 usando --no_https"
-            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis;x86"
+            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis;x86" || true
 
       - run:
           name: Crear y arrancar emulador Android headless
