@@ -28,9 +28,10 @@ public class SampleTest {
                 .setAppActivity("com.google.android.youtube.HomeActivity")
                 .setIsHeadless(true)
                 .setAutoGrantPermissions(true);
-
+        options.setCapability("skipHiddenApiCheck", true);
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/"), options);
     }
+
 
     @Test
     void sampleTestSerenity(){
