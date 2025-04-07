@@ -71,7 +71,7 @@ jobs:
           name: Ejecutar pruebas con Gradle
           command: |
             echo "Ejecutando tests con Gradle..."
-            ./gradlew test
+            ./gradlew test --info --stacktrace
             # O, si no usas wrapper: gradle test
 
 workflows:
