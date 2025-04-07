@@ -5,31 +5,23 @@ jobs:
     docker:
       - image: cimg/android:2023.09
     environment:
-      # Usamos el SDK preinstalado en la imagen, que se encuentra en /home/circleci/android-sdk
       ANDROID_SDK_ROOT: /home/circleci/android-sdk
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
     steps:
       - run:
-          name: Verificar entorno y estructura del SDK
+          name: Debug: Verificar entorno y rutas
           command: |
-            echo "Variables de entorno:"
             echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
             echo "JAVA_HOME: $JAVA_HOME"
             echo "CLASSPATH: $CLASSPATH"
-            echo ""
             echo "Estructura de $ANDROID_SDK_ROOT/cmdline-tools:"
-            ls -R $ANDROID_SDK_ROOT/cmdline-tools || echo "No se encontró el directorio cmdline-tools"
-            echo ""
+            ls -R $ANDROID_SDK_ROOT/cmdline-tools || echo "No se encontró cmdline-tools"
             echo "Verificando existencia de sdkmanager:"
             if [ -f $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager ]; then
-              echo "sdkmanager existe en: $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+              echo "sdkmanager existe en $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
             else
-              echo "sdkmanager NO existe. Listando $ANDROID_SDK_ROOT/cmdline-tools/latest:"
-              ls -R $ANDROID_SDK_ROOT/cmdline-tools/latest || echo "Directorio 'latest' no encontrado"
+              echo "sdkmanager NO existe en la ruta esperada"
             fi
-            echo ""
-            echo "Estructura de $ANDROID_SDK_ROOT/platform-tools (si existe):"
-            ls -R $ANDROID_SDK_ROOT/platform-tools || echo "No se encontró el directorio platform-tools"
 
       - run:
           name: Clonar repo manualmente con HTTPS
@@ -57,8 +49,8 @@ jobs:
           name: Instalar imagen del sistema Android 30
           command: |
             export JAVA_OPTS="-Djavax.xml.accessExternalSchema=all"
-            echo "Instalando imagen de sistema: system-images;android-30;google_apis;x86"
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-30;google_apis;x86"
+            echo "Instalando imagen de sistema: system-images;android-30;google_apis;x86 usando --no_https"
+            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis;x86"
 
       - run:
           name: Crear y arrancar emulador Android headless
