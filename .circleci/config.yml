@@ -22,6 +22,8 @@ jobs:
             else
               echo "sdkmanager NO existe en la ruta esperada"
             fi
+            echo "Estructura de $ANDROID_SDK_ROOT/platform-tools:"
+            ls -R $ANDROID_SDK_ROOT/platform-tools || echo "No se encontró platform-tools"
 
       - run:
           name: Clonar repo manualmente con HTTPS
@@ -44,6 +46,12 @@ jobs:
             gradle -v
             adb version
             emulator -version || true
+
+      - run:
+          name: Actualizar SDK Tools
+          command: |
+            echo "Actualizando SDK Tools..."
+            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --update
 
       - run:
           name: Instalar imagen del sistema Android 30
