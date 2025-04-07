@@ -65,7 +65,7 @@ jobs:
       - run:
           name: Verificar IP del contenedor
           command: |
-            ip addr show
+            ifconfig || (sudo apt-get update && sudo apt-get install -y net-tools && ifconfig)
 
       - run:
           name: Ejecutar pruebas con Gradle
