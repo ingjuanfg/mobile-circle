@@ -29,8 +29,7 @@ public class SampleTest {
                 .setIsHeadless(true)
                 .setAutoGrantPermissions(true);
 
-        driver = new AndroidDriver(new URL("http://10.89.7.3:4723/"), options);
-
+        driver = new AndroidDriver(new URL("http://127.0.0.1:4723/"), options);
     }
 
     @Test
