@@ -22,7 +22,7 @@ public class SampleTest {
     public void configuracionAppium() throws MalformedURLException {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
-                .setDeviceName("Android Emulator")
+                .setDeviceName("emulator-5554")
                 .setPlatformVersion("11.0")
                 .setAppPackage("com.google.android.youtube")
                 .setAppActivity("com.google.android.youtube.HomeActivity")

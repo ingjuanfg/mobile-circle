@@ -63,6 +63,11 @@ jobs:
             tail -n 20 appium.log
 
       - run:
+          name: Verificar IP del contenedor
+          command: |
+            ip addr show
+
+      - run:
           name: Ejecutar pruebas con Gradle
           command: |
             echo "Ejecutando tests con Gradle..."
