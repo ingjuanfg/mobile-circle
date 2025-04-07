@@ -39,49 +39,40 @@ jobs:
             yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis;x86" || true
 
       - run:
-          name: Crear y arrancar emulador Android headless en modo software
+          name: Arrancar emulador y ejecutar tests
           command: |
+            # Crear AVD y arrancar el emulador en modo software
             echo "Creando AVD 'test-emulator'..."
             echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
             echo "Arrancando emulador en modo software..."
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -accel off &
+            EMULATOR_PID=$!
             echo "Esperando a que el emulador arranque..."
-            sleep 20
+            sleep 30
             adb wait-for-device
-            adb shell input keyevent 82 || true
-            sleep 10
             adb devices
 
-#      - run:
-#          name: Instalar driver de UIAutomator2 en Appium
-#          command: |
-#            echo "Instalando el driver de UIAutomator2..."
-#            appium driver install uiautomator2
-
-      - run:
-          name: Iniciar Appium server
-          command: |
+            # Instalar el driver de UIAutomator2 y validar dependencias con Appium Doctor
             echo "Instalando el driver de UIAutomator2..."
             appium driver install uiautomator2
-            echo "Instalando el Appium doctor"
-            sudo npm install appium-doctor -g
+            echo "Instalando Appium Doctor..."
+            sudo npm install -g appium-doctor
             appium-doctor --android
+
+            # Arrancar Appium server con los flags requeridos
             echo "Arrancando Appium server en segundo plano..."
             nohup appium --address 127.0.0.1 --allow-cors > appium.log 2>&1 &
             sleep 10
             echo "Appium server iniciado. Log (últimas líneas):"
             tail -n 20 appium.log
 
-      - run:
-          name: Ejecutar pruebas con Gradle
-          command: |
-            echo "VALIDAR EMULADOR ANTES DE EJECUTAR"
-            adb devices
-            echo "VALIDAR APPIUM"
-            appium-doctor --android
+            # Ejecutar pruebas con Gradle
             echo "Ejecutando tests con Gradle..."
             ./gradlew test --info --stacktrace
-            # O, si no usas wrapper: gradle test
+
+            # Finalizar el emulador al terminar los tests
+            echo "Finalizando el emulador..."
+            kill $EMULATOR_PID
 
 workflows:
   version: 2
