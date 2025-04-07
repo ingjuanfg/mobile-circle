@@ -23,7 +23,7 @@ public class SampleTest {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setPlatformName("Android")
                 .setDeviceName("Android Emulator")
-                .setPlatformVersion("16.0")
+                .setPlatformVersion("11.0")
                 .setAppPackage("com.google.android.youtube")
                 .setAppActivity("com.google.android.youtube.HomeActivity")
                 .setIsHeadless(true)

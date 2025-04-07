@@ -5,11 +5,12 @@ jobs:
     docker:
       - image: cimg/android:2023.09
     environment:
-      # Usamos el SDK preinstalado en la imagen, que se encuentra en /home/circleci/android-sdk
+      # El SDK preinstalado en la imagen se encuentra en /home/circleci/android-sdk
       ANDROID_SDK_ROOT: /home/circleci/android-sdk
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
     steps:
       - run:
-          name: Clonar repo manualmente con HTTPS
+          name: Clonar repositorio vía HTTPS
           command: |
             git clone https://github.com/ingjuanfg/mobile-circle.git .
 
@@ -34,26 +35,32 @@ jobs:
           name: Instalar imagen del sistema Android 30
           command: |
             export JAVA_OPTS="-Djavax.xml.accessExternalSchema=all"
-            echo "Instalando imagen de sistema: system-images;android-30;google_apis;x86"
+            echo "Instalando imagen: system-images;android-30;google_apis;x86"
             yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis;x86" || true
 
       - run:
-          name: Crear y arrancar emulador Android headless
+          name: Crear y arrancar emulador Android headless en modo software
           command: |
             echo "Creando AVD 'test-emulator'..."
             echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-            echo "Arrancando el emulador en segundo plano en modo software..."
+            echo "Arrancando emulador en modo software..."
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -accel off &
             echo "Esperando a que el emulador arranque..."
             sleep 20
             adb wait-for-device
-            # Forzamos que, si falla el envío del keyevent, se ignore el error
             adb shell input keyevent 82 || true
             sleep 10
             adb devices
 
+      - run:
+          name: Ejecutar pruebas con Gradle
+          command: |
+            ./gradlew test
+            # O, si tu proyecto no usa wrapper, puedes usar:
+            # gradle test
+
 workflows:
   version: 2
-  setup-and-validate:
+  setup-and-test:
     jobs:
       - setup-tools
