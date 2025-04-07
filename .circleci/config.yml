@@ -9,7 +9,8 @@ jobs:
       ANDROID_SDK_ROOT: "$HOME/android-sdk"
       ANDROID_HOME: "$HOME/android-sdk"
       JAVA_HOME: "/usr/lib/jvm/java-17-openjdk-amd64"
-      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/emulator:$HOME/android-sdk/tools:$HOME/android-sdk/cmdline-tools/latest/bin
+      # Actualizamos PATH para incluir la ruta a "tools/bin"
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/emulator:$HOME/android-sdk/tools:$HOME/android-sdk/cmdline-tools/tools/bin
     steps:
 
       - run:
@@ -37,24 +38,21 @@ jobs:
           command: |
             mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
             curl -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-            # Extraer en un directorio temporal dentro del SDK
-            mkdir -p $ANDROID_SDK_ROOT/temp
-            unzip -q cmdline-tools.zip -d $ANDROID_SDK_ROOT/temp
-            # Mover la carpeta interna "cmdline-tools" a "latest"
-            mv $ANDROID_SDK_ROOT/temp/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
-            # Limpiar el directorio temporal
-            rm -rf $ANDROID_SDK_ROOT/temp
-            # Debug: Imprimir la estructura de directorios de cmdline-tools
-            echo "Estructura de directorios en \$ANDROID_SDK_ROOT/cmdline-tools:"
-            find $ANDROID_SDK_ROOT/cmdline-tools -type f
+            # Extraer el ZIP en el directorio cmdline-tools
+            unzip -q cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+            # La carpeta extraída normalmente se llama "cmdline-tools"; la renombramos a "tools"
+            mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/tools
+            # Debug: Imprimir la estructura de cmdline-tools para verificar que contenga "bin", "lib", etc.
+            echo "Estructura de \$ANDROID_SDK_ROOT/cmdline-tools:"
+            ls -R $ANDROID_SDK_ROOT/cmdline-tools
 
       - run:
           name: Instalar platform-tools
           command: |
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
-            # Debug: Verificar que se instaló platform-tools
-            echo "Estructura de directorios en \$ANDROID_SDK_ROOT/platform-tools:"
-            find $ANDROID_SDK_ROOT/platform-tools -type f
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+            # Debug: Imprimir la estructura de platform-tools para confirmar la instalación
+            echo "Estructura de \$ANDROID_SDK_ROOT/platform-tools:"
+            ls -R $ANDROID_SDK_ROOT/platform-tools
 
       - run:
           name: Validar herramientas instaladas
@@ -70,12 +68,13 @@ jobs:
       - run:
           name: Instalar imagen del sistema Android 30
           command: |
-            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-30;google_apis;x86"
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-30;google_apis;x86"
 
       - run:
           name: Crear y arrancar emulador Android headless
           command: |
-            echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
+            echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/tools/bin/avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
+            # Arrancar el emulador en segundo plano
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
             echo "Esperando que el emulador arranque..."
             adb wait-for-device
