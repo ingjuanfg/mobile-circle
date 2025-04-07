@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: cimg/android:2023.09
     environment:
-      # El SDK preinstalado en la imagen se encuentra en /home/circleci/android-sdk
+      # Usamos el SDK preinstalado en /home/circleci/android-sdk que ya viene configurado en la imagen.
       ANDROID_SDK_ROOT: /home/circleci/android-sdk
     steps:
       - run:
@@ -31,11 +31,17 @@ jobs:
             emulator -version || true
 
       - run:
+          name: Instalar imagen del sistema Android 30
+          command: |
+            # Instalar la imagen del sistema necesaria para crear el emulador.
+            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk "system-images;android-30;google_apis;x86"
+
+      - run:
           name: Crear y arrancar emulador Android headless
           command: |
-            # Se crea el AVD de forma automática (se responde "no" a la pregunta interactiva)
+            # Crear el AVD con la imagen instalada.
             echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
-            # Se arranca el emulador en segundo plano sin ventana, audio, animaciones ni snapshot
+            # Arrancar el emulador en segundo plano
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
             echo "Esperando que el emulador arranque..."
             adb wait-for-device
