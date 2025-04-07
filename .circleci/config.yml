@@ -4,11 +4,8 @@ jobs:
   setup-tools:
     docker:
       - image: cimg/android:2023.09
-    # La imagen cimg/android:2023.09 ya viene con el Android SDK preinstalado.
-    # No es necesario reinstalar cmdline-tools ni platform-tools.
     environment:
-      # En este ejemplo se utiliza el valor por defecto o el que ya está configurado en la imagen.
-      # Algunos repositorios usan /home/circleci/android-sdk, que es donde se encuentra el SDK preinstalado.
+      # El SDK preinstalado en la imagen se encuentra en /home/circleci/android-sdk
       ANDROID_SDK_ROOT: /home/circleci/android-sdk
     steps:
       - run:
@@ -32,6 +29,19 @@ jobs:
             gradle -v
             adb version
             emulator -version || true
+
+      - run:
+          name: Crear y arrancar emulador Android headless
+          command: |
+            # Se crea el AVD de forma automática (se responde "no" a la pregunta interactiva)
+            echo "no" | avdmanager create avd -n test-emulator -k "system-images;android-30;google_apis;x86" --device "pixel"
+            # Se arranca el emulador en segundo plano sin ventana, audio, animaciones ni snapshot
+            emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot &
+            echo "Esperando que el emulador arranque..."
+            adb wait-for-device
+            adb shell input keyevent 82
+            sleep 10
+            adb devices
 
 workflows:
   version: 2
