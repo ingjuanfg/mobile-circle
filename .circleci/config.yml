@@ -45,10 +45,10 @@ jobs:
             echo "Arrancando el emulador en segundo plano en modo software..."
             emulator -avd test-emulator -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect -accel off &
             echo "Esperando a que el emulador arranque..."
-            # Esperar más tiempo ya que el modo software puede ser más lento (ajusta el sleep si es necesario)
             sleep 20
             adb wait-for-device
-            adb shell input keyevent 82
+            # Forzamos que, si falla el envío del keyevent, se ignore el error
+            adb shell input keyevent 82 || true
             sleep 10
             adb devices
 
