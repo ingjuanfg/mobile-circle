@@ -53,11 +53,21 @@ jobs:
             adb devices
 
       - run:
+          name: Iniciar Appium server
+          command: |
+            echo "Arrancando Appium server en segundo plano..."
+            nohup appium > appium.log 2>&1 &
+            # Esperar para que Appium se inicie completamente
+            sleep 10
+            echo "Appium server iniciado. Log:"
+            tail -n 20 appium.log
+
+      - run:
           name: Ejecutar pruebas con Gradle
           command: |
+            echo "Ejecutando tests con Gradle..."
             ./gradlew test
-            # O, si tu proyecto no usa wrapper, puedes usar:
-            # gradle test
+            # Si no usas wrapper, reemplaza por: gradle test
 
 workflows:
   version: 2
