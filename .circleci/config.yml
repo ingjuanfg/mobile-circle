@@ -70,7 +70,7 @@ jobs:
             adb devices
             
             echo "VALIDAR APPIUM"
-            curl http://127.0.0.1:4723/wd/hub/status
+            curl http://127.0.0.1:4723/status
 
             # Ejecutar pruebas con Gradle
             echo "Ejecutando tests con Gradle..."
