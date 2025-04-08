@@ -42,7 +42,7 @@ jobs:
           command: |
             export JAVA_OPTS="-Djavax.xml.accessExternalSchema=all"
             echo "Instalando imagen: system-images;android-30;google_apis;x86"
-            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis;x86" || true
+            yes | /home/circleci/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/home/circleci/android-sdk --no_https "system-images;android-30;google_apis_playstore;x86_64" || true
 
       - run:
           name: Arrancar emulador y ejecutar tests

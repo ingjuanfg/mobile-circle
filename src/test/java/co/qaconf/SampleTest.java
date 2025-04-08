@@ -28,6 +28,10 @@ public class SampleTest {
                 .setIsHeadless(false)
                 .setAutoGrantPermissions(true);
         options.setAppWaitActivity("com.saucelabs.mydemoapp.android.view.activities.MainActivity");
+        options.setCapability("skipHiddenApiCheck", true);
+        options.setCapability("skipDeviceInitialization", true);
+        options.setCapability("skipServerInstallation", true);
+        options.setCapability("adbExecTimeout", 60000);
 
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/"), options);
     }
