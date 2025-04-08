@@ -73,6 +73,12 @@ jobs:
 
             echo "VALIDAR EMULADOR DE NUEVO"
             adb devices
+            echo "VALIDAR ESTATUS"
+            adb -s emulator-5554 get-state
+            echo "VALIDAR BOOT"
+            adb -s emulator-5554 shell getprop sys.boot_completed
+            echo "VALIDAR SCREEN"
+            adb -s emulator-5554 shell getprop init.svc.bootanim
             
             echo "VALIDAR APPIUM"
             curl http://127.0.0.1:4723/status
