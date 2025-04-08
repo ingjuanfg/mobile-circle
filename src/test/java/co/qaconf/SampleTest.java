@@ -28,13 +28,8 @@ public class SampleTest {
                 .setAppActivity("com.google.android.youtube.HomeActivity")
                 .setIsHeadless(true)
                 .setAutoGrantPermissions(true);
-        // Agregamos estas capabilities para omitir la inicialización que causa el error
-        options.setCapability("skipHiddenApiCheck", true);
-        options.setCapability("skipDeviceInitialization", true);
-        options.setCapability("skipServerInstallation", true);
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/"), options);
     }
-
 
     @Test
     void sampleTestSerenity(){
